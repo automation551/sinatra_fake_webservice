@@ -1,5 +1,6 @@
 require 'net/http'
-require 'uri'
+require 'sinatra/base'
+require 'socket'
 
 class SinatraWebService
   
@@ -7,16 +8,7 @@ class SinatraWebService
   attr_accessor :current_thread
   
   class SinatraStem < Sinatra::Base      
-    
     enable :methodoverride
-    
-    get '/' do
-      "Hello! i am lindesy lohan!"
-    end
-    
-    post '/gimmie' do
-      "here ya go"
-    end
   end
   
   
@@ -34,31 +26,27 @@ class SinatraWebService
       Thread.list.first.kill
     end
     
-    @port = find_free_port
+    find_free_port
     
     self.current_thread = Thread.new do
-        SinatraStem.run! :post => @host, :port => @port.to_i
-      sleep 1
+      SinatraStem.run! :post => @host, :port => @port.to_i
     end
+
+    sleep 0.1 until alive?
   end
   
   def find_free_port
-    found = false
-    attempts = 0
-    while !found and attempts < 10
-      puts "\n== Trying port #{@port}"
-      begin
-        res = Net::HTTP.start(host,port) do |http|
-          http.get('/')
-        end
-        attempts += 1
-        @port = @port.succ
-      rescue Errno::ECONNREFUSED
-        return @port
-      end
-    end
+    @port += 1 while alive?
   end
   
+  def alive?
+    s = TCPSocket.new( @host, @port )
+    s.close
+    s
+  rescue Errno::ECONNREFUSED
+    false 
+  end
+
   def get_response(action)
     res = Net::HTTP.start(self.host, self.port) do |http|
       http.get(action)
