@@ -5,12 +5,14 @@ class SinatraWebService
   
   attr_accessor :host, :port
   attr_accessor :current_thread
-  
-  class SinatraStem < Sinatra::Base      
-    enable :methodoverride
-  end
-  
+  attr_accessor :server
+
   def initialize(options = {})
+    @server = Class.new(Sinatra::Base)
+    @server.class_eval do 
+      enable :method_override
+    end
+
     @host = options[:host] ||= 'localhost'
     @port = options[:port] ? options[:port].to_i : 4567
   end
@@ -23,7 +25,7 @@ class SinatraWebService
     find_free_port
     
     self.current_thread = Thread.new do
-      SinatraStem.run! :post => @host, :port => @port
+      @server.run! :post => @host, :port => @port
     end
 
     sleep 0.1 until alive?
@@ -42,7 +44,7 @@ class SinatraWebService
   end
 
   def method_missing(method, *args, &block)
-    SinatraStem.instance_eval do |base|
+    @server.instance_eval do |base|
       route method.to_s.upcase, *args, &block
     end 
   end

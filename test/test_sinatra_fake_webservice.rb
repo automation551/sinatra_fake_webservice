@@ -17,12 +17,27 @@ class TestSinatraFakeWebservice < Test::Unit::TestCase
       @test_client = SinatraWebService::TestClient.new( @sinatra_app )
     end
 
+    should "be independent of other instances" do
+      action = "/test"
+      
+      @other_instance = SinatraWebService.new
+      @other_instance.run!
+      @other_instance.get( action ) { "new hotness" }
+
+      @sinatra_app.get( action ) { "old and busted" }
+
+      assert_equal "old and busted", @test_client.get( action ).body
+
+      @other_client = SinatraWebService::TestClient.new( @other_instance )
+      assert_equal "new hotness", @other_client.get( action ).body
+    end
+
     should "not be ready until it can serve connections" do
       assert @sinatra_app.alive?
     end
     
     # XXX: this test depends on the fact that it comes first alphabetically
-    should "have default host and port" do
+    should "aaa have default host and port" do
       assert_equal 4567, @sinatra_app.port
       assert_equal 'localhost', @sinatra_app.host
     end
