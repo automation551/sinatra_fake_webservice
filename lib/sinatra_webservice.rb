@@ -14,7 +14,7 @@ class SinatraWebService
   
   def initialize(options = {})
     @host = options[:host] ||= 'localhost'
-    @port = options[:port] ||= 4567
+    @port = options[:port] ? options[:port].to_i : 4567
   end
   
   def running?
@@ -29,7 +29,7 @@ class SinatraWebService
     find_free_port
     
     self.current_thread = Thread.new do
-      SinatraStem.run! :post => @host, :port => @port.to_i
+      SinatraStem.run! :post => @host, :port => @port
     end
 
     sleep 0.1 until alive?

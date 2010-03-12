@@ -1,38 +1,36 @@
 require 'helper'
 
 class TestSinatraFakeWebservice < Test::Unit::TestCase
+  context "creating a sinatra web instance" do
+    should "not blowup when passed a string port" do
+      port = 9001
+      sws = SinatraWebService.new :port => port.to_s
+      assert_equal port, sws.port      
+    end
+  end
   
-  context "a new sinatra web service" do
-    
+  context "a sinatra web service instance" do
     setup do
       @sinatra_app = SinatraWebService.new
       @sinatra_app.run!
-      
-      @sinatra_app.get '/payme' do
-        "OMG I GOT PAID"
-      end
-      
-      @sinatra_app.post '/returnme' do
-        "#{params[:return_value]}"
-      end
-       
-      @sinatra_app.delete '/killme' do
-        "argh! i is dead."
-      end 
-      
-      @sinatra_app.put '/gimmieitnow' do
-        "yay, i haz it."
-      end
-      
-      #@sinatra_app.run!
+    end
+
+    should "not be ready until it can serve connections" do
+      assert @sinatra_app.alive?
     end
     
+    # XXX: this test depends on the fact that it comes first alphabetically
     should "have default host and port" do
       assert_equal 4567, @sinatra_app.port
       assert_equal 'localhost', @sinatra_app.host
     end
     
     context "with a registered GET service" do
+      setup do
+        @sinatra_app.get '/payme' do
+          "OMG I GOT PAID"
+        end
+      end
       
       should "respond to GET '/payme' with 'OMG I GOT PAID" do
         res = @sinatra_app.get_response('/payme') 
@@ -41,6 +39,11 @@ class TestSinatraFakeWebservice < Test::Unit::TestCase
     end
     
     context "with a registered POST service" do
+      setup do
+        @sinatra_app.post '/returnme' do
+          "#{params[:return_value]}"
+        end
+      end
       
       should "respond to POST '/returnme' with param :return_value with param value" do
         res = @sinatra_app.post_response('/returnme',"return_value=2")
@@ -50,6 +53,11 @@ class TestSinatraFakeWebservice < Test::Unit::TestCase
     end
     
     context "with a registered DELETE service" do
+      setup do
+        @sinatra_app.delete '/killme' do
+          "argh! i is dead."
+        end 
+      end
       
       should "respond to DELETE '/killme'" do
         res = @sinatra_app.delete_response('/killme')
@@ -59,6 +67,11 @@ class TestSinatraFakeWebservice < Test::Unit::TestCase
     end
     
     context "with a registered PUT service" do
+      setup do
+        @sinatra_app.put '/gimmieitnow' do
+          "yay, i haz it."
+        end
+      end
       
       should "respond to put '/gimmieitnow'" do
         res = @sinatra_app.put_response('/gimmieitnow')
