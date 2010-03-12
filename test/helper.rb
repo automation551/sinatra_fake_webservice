@@ -1,15 +1,36 @@
 require 'rubygems'
 require 'test/unit'
 require 'shoulda'
-
-
-$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
-$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'metal'))
-$LOAD_PATH.unshift(File.dirname(__FILE__))
-require 'sinatra/base'
-
 require 'sinatra_webservice'
 
+require 'net/http'
 
-class Test::Unit::TestCase
+class SinatraWebService::TestClient
+  attr_accessor :host, :port
+
+  def initialize( app )
+    @host, @port = app.host, app.port
+  end
+
+  def get(action)
+    res = Net::HTTP.start(self.host, self.port) do |http|
+      http.get(action)
+    end
+  end
+  
+  def delete(action, data = "", headers = nil, dest = nil)
+    data = data.empty? ? "_method=delete" : data += "&_method=delete"
+    post(action, data, headers, dest)
+  end
+  
+  def put(action, data = "", headers = nil, dest = nil)
+    data = data.empty? ? "_method=put" : data += "&_method=put"
+    post(action, data, headers, dest)
+  end
+  
+  def post(action, data, headers = nil, dest = nil)
+    res = Net::HTTP.start(self.host, self.port) do |http|
+      http.post(action, data, headers, dest)
+    end
+  end
 end

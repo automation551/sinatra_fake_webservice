@@ -1,4 +1,3 @@
-require 'net/http'
 require 'sinatra/base'
 require 'socket'
 
@@ -10,7 +9,6 @@ class SinatraWebService
   class SinatraStem < Sinatra::Base      
     enable :methodoverride
   end
-  
   
   def initialize(options = {})
     @host = options[:host] ||= 'localhost'
@@ -47,28 +45,6 @@ class SinatraWebService
     false 
   end
 
-  def get_response(action)
-    res = Net::HTTP.start(self.host, self.port) do |http|
-      http.get(action)
-    end
-  end
-  
-  def delete_response(action, data = "", headers = nil, dest = nil)
-    data = data.empty? ? "_method=delete" : data += "&_method=delete"
-    post_response(action, data, headers, dest)
-  end
-  
-  def put_response(action, data = "", headers = nil, dest = nil)
-    data = data.empty? ? "_method=put" : data += "&_method=put"
-    post_response(action, data, headers, dest)
-  end
-  
-  def post_response(action, data, headers = nil, dest = nil)
-    res = Net::HTTP.start(self.host, self.port) do |http|
-      http.post(action, data, headers, dest)
-    end
-  end
-  
   def method_missing(method, *args, &block)
     SinatraStem.instance_eval do |base|
       route method.to_s.upcase, *args, &block

@@ -13,6 +13,8 @@ class TestSinatraFakeWebservice < Test::Unit::TestCase
     setup do
       @sinatra_app = SinatraWebService.new
       @sinatra_app.run!
+
+      @test_client = SinatraWebService::TestClient.new( @sinatra_app )
     end
 
     should "not be ready until it can serve connections" do
@@ -33,7 +35,7 @@ class TestSinatraFakeWebservice < Test::Unit::TestCase
       end
       
       should "respond to GET '/payme' with 'OMG I GOT PAID" do
-        res = @sinatra_app.get_response('/payme') 
+        res = @test_client.get('/payme') 
         assert_equal "OMG I GOT PAID",res.body
       end
     end
@@ -46,7 +48,7 @@ class TestSinatraFakeWebservice < Test::Unit::TestCase
       end
       
       should "respond to POST '/returnme' with param :return_value with param value" do
-        res = @sinatra_app.post_response('/returnme',"return_value=2")
+        res = @test_client.post('/returnme',"return_value=2")
         
         assert_equal "2", res.body
       end
@@ -60,7 +62,7 @@ class TestSinatraFakeWebservice < Test::Unit::TestCase
       end
       
       should "respond to DELETE '/killme'" do
-        res = @sinatra_app.delete_response('/killme')
+        res = @test_client.delete('/killme')
         
         assert_equal "argh! i is dead.", res.body
       end
@@ -74,7 +76,7 @@ class TestSinatraFakeWebservice < Test::Unit::TestCase
       end
       
       should "respond to put '/gimmieitnow'" do
-        res = @sinatra_app.put_response('/gimmieitnow')
+        res = @test_client.put('/gimmieitnow')
         
         assert_equal "yay, i haz it.", res.body
       end
