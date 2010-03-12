@@ -20,10 +20,6 @@ class SinatraWebService
   end
 
   def run!
-    if Thread.list.size > 2
-      Thread.list.first.kill
-    end
-    
     find_free_port
     
     self.current_thread = Thread.new do
